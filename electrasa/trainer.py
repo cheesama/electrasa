@@ -5,11 +5,20 @@ from transformers import ElectraModel, ElectraTokenizer
 
 from .electrasa_lightning_model import ElectrasaClassifier
 
-import os,sys
+import os, sys
 import torch
 
-def train(file_path, train_ratio=0.8, batch_size=128, optimizer='Adam', intent_optimizer_lr=1e-5, entity_optimizer_lr=2e-5, epochs=20):
-    trainer = Trainer(max_epochs=epochs, gpus=torch.cuda.device_count())
+
+def train(
+    file_path,
+    train_ratio=0.8,
+    batch_size=128,
+    optimizer="Adam",
+    intent_optimizer_lr=1e-5,
+    entity_optimizer_lr=1e-5,
+    epochs=20,
+):
+    trainer = Trainer(max_epochs=epochs, gpus=torch.cuda.device_count(), distributed_backend='dp')
 
     model_args = {}
     model_args["epochs"] = epochs
@@ -23,6 +32,3 @@ def train(file_path, train_ratio=0.8, batch_size=128, optimizer='Adam', intent_o
     hparams = Namespace(**model_args)
     model = ElectrasaClassifier(hparams)
     trainer.fit(model)
-
-
-
