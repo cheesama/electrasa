@@ -18,7 +18,7 @@ def train(
     entity_optimizer_lr=1e-5,
     epochs=20,
 ):
-    trainer = Trainer(max_epochs=epochs, gpus=torch.cuda.device_count(), distributed_backend='dp')
+    trainer = Trainer(max_epochs=epochs, gpus=torch.cuda.device_count())
 
     model_args = {}
     model_args["epochs"] = epochs
