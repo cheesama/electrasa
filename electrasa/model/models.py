@@ -15,12 +15,9 @@ class KoELECTRAFineTuner(nn.Module):
         self.entity_embedding = nn.Linear(self.backbone.config.hidden_size, self.entity_class_num)
 
     def forward(self, tokens):
-        '''
-        Without padding all tokens are calculated using EmbeddingBag
-        '''
         feature = self.backbone(tokens)[0]
 
-        intent_pred = self.intent_embedding(feature)
+        intent_pred = self.intent_embedding(feature[:,0,:]) #forward only first [CLS] token
         entity_pred = self.entity_embedding(feature) 
 
         return intent_pred, entity_pred

@@ -191,9 +191,7 @@ class RasaIntentEntityDataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         tokens = self.encode(self.dataset[idx]["text"])
 
-        intent_idx = np.array(len(tokens) * [len(self.intent_dict)]) # dummy label except [CLS] token
-        intent_idx[0]=self.dataset[idx]['intent_idx']
-        intent_idx = torch.from_numpy(intent_idx)
+        intent_idx=self.dataset[idx]['intent_idx']
 
         entity_idx = np.array(len(tokens) * [0]) # O tag indicate 0(zero)
 
@@ -234,7 +232,7 @@ def token_concat_collate_fn(batch):
     batch : tokens have various length, inten_idx, entity_indices have various length 
     """
     tokens = rnn_utils.pad_sequence([each_data[0] for each_data in batch], batch_first=True).long()
-    intent_indices = rnn_utils.pad_sequence([each_data[1] for each_data in batch], batch_first=True)
+    intent_indices = torch.tensor([each_data[1] for each_data in batch]).long()
     entity_indices = rnn_utils.pad_sequence([each_data[2] for each_data in batch], batch_first=True)
 
     return (tokens, intent_indices, entity_indices)
