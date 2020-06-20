@@ -67,10 +67,10 @@ class Inferencer:
         _, entity_indices = torch.max((entity_result)[0][1:-1, :], dim=1)
         start_idx = -1
 
-        #print ('tokens')
-        #print (tokens)
-        #print ('predicted entities')
-        #print (entity_indices)
+        print ('tokens')
+        print (tokens)
+        print ('predicted entities')
+        print (entity_indices)
 
         entity_indices = entity_indices.tolist()[:len(text)]
         start_token_position = -1
