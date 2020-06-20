@@ -67,12 +67,12 @@ class Inferencer:
         _, entity_indices = torch.max((entity_result)[0][1:-1, :], dim=1)
         start_idx = -1
 
-        print (self.model.dataset.tokenize(text))
+        #print (self.model.dataset.tokenize(text))
 
-        print ('tokens')
-        print (tokens)
-        print ('predicted entities')
-        print (entity_indices)
+        #print ('tokens')
+        #print (tokens)
+        #print ('predicted entities')
+        #print (entity_indices)
 
         entity_indices = entity_indices.tolist()[:len(text)]
         start_token_position = -1
@@ -103,6 +103,7 @@ class Inferencer:
                 start_position = text.find(token_value.strip())
 
                 # find end text position
+                token_idx = tokens[end_token_position + 1]
                 token_value = self.model.dataset.tokenizer.convert_ids_to_tokens([token_idx])[0].replace("#", "")
 
                 end_position = text.find(token_value.strip(), start_position) + len(token_value.strip())
