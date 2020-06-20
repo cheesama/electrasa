@@ -67,6 +67,8 @@ class Inferencer:
         _, entity_indices = torch.max((entity_result)[0][1:-1, :], dim=1)
         start_idx = -1
 
+        print (self.model.dataset.tokenize(text))
+
         print ('tokens')
         print (tokens)
         print ('predicted entities')
