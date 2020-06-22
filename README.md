@@ -31,3 +31,6 @@ O --> R(Entity Label 1)
 O --> S(Entity Label ...)
 O --> T(Entity Label n-1)
 ```
+
+## Reference
+[KoELECTRA](https://github.com/monologg/KoELECTRA)
