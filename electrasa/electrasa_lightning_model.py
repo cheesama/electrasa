@@ -106,8 +106,8 @@ class ElectrasaClassifier(pl.LightningModule):
         tokens, intent_idx, entity_idx = batch
         intent_pred, entity_pred = self.forward(tokens)
 
-        intent_acc = accuracy(intent_pred, intent_idx.argmax(1))
-        entity_acc = accuracy(entity_pred, entity_pred.argmax(2))
+        intent_acc = accuracy(intent_pred.argmax(1), intent_idx)
+        entity_acc = accuracy(entity_pred.argmax(2), entity_idx)
 
         tensorboard_logs = {
             "train/intent/acc": intent_acc,
@@ -138,8 +138,8 @@ class ElectrasaClassifier(pl.LightningModule):
         tokens, intent_idx, entity_idx = batch
         intent_pred, entity_pred = self.forward(tokens)
 
-        intent_acc = accuracy(intent_pred, intent_idx.argmax(1))
-        entity_acc = accuracy(entity_pred, entity_pred.argmax(2))
+        intent_acc = accuracy(intent_pred.argmax(1), intent_idx)
+        entity_acc = accuracy(entity_pred.argmax(2), entity_idx)
 
         intent_loss = self.intent_loss_fn(intent_pred, intent_idx.long(),)
         entity_loss = self.entity_loss_fn(entity_pred.transpose(1, 2), entity_idx.long(),)
