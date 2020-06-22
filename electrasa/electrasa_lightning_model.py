@@ -5,10 +5,8 @@ from torch.utils.data import DataLoader, random_split
 from torch.optim import Adam
 from torch.optim.lr_scheduler import StepLR, ReduceLROnPlateau
 
-from torchnlp.metrics import get_accuracy, get_token_accuracy
-from sklearn.metrics import balanced_accuracy_score
-
 from pytorch_lightning import Trainer
+from pytorch_lightning.metrics.functional import accuracy, auroc, f1_score
 
 from .dataset.intent_entity_dataset import RasaIntentEntityDataset, token_concat_collate_fn
 from .model.models import KoELECTRAFineTuner
@@ -108,8 +106,8 @@ class ElectrasaClassifier(pl.LightningModule):
         tokens, intent_idx, entity_idx = batch
         intent_pred, entity_pred = self.forward(tokens)
 
-        intent_acc = balanced_accuracy_score(intent_idx.cpu(), intent_pred.max(1)[1].tolist())
-        entity_acc = balanced_accuracy_score(entity_idx.cpu().tolist()[0], entity_pred.max(2)[1].cpu().tolist()[0])
+        intent_acc = accuracy(intent_pred, intent_idx.argmax(1))
+        entity_acc = accuracy(entity_pred, entity_pred.argmax(2))
 
         tensorboard_logs = {
             "train/intent/acc": intent_acc,
@@ -140,8 +138,8 @@ class ElectrasaClassifier(pl.LightningModule):
         tokens, intent_idx, entity_idx = batch
         intent_pred, entity_pred = self.forward(tokens)
 
-        intent_acc = balanced_accuracy_score(intent_idx.cpu(), intent_pred.max(1)[1].tolist())
-        entity_acc = balanced_accuracy_score(entity_idx.cpu().tolist()[0], entity_pred.max(2)[1].cpu().tolist()[0])
+        intent_acc = accuracy(intent_pred, intent_idx.argmax(1))
+        entity_acc = accuracy(entity_pred, entity_pred.argmax(2))
 
         intent_loss = self.intent_loss_fn(intent_pred, intent_idx.long(),)
         entity_loss = self.entity_loss_fn(entity_pred.transpose(1, 2), entity_idx.long(),)
