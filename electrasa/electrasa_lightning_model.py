@@ -180,9 +180,10 @@ class ElectrasaClassifier(pl.LightningModule):
         avg_entity_acc = torch.stack([x["val_entity_acc"] for x in outputs]).mean()
         avg_entity_f1 = torch.stack([x["val_entity_f1"] for x in outputs]).mean()
 
-        print(
-            f"intent_acc : {avg_intent_acc}, intent_f1 : {avg_intent_f1}, entity_acc : {avg_entity_acc}, entity_f1 : {avg_entity_f1}"
-        )
+        print ()
+        print (f"intent_acc : {avg_intent_acc}, intent_f1 : {avg_intent_f1}") 
+        print (f"entity_acc : {avg_entity_acc}, entity_f1 : {avg_entity_f1}")
+        print ()
 
         tensorboard_logs = {
             "val/loss": avg_loss,
