@@ -18,6 +18,7 @@ def train(
     entity_optimizer_lr=5e-5,
     epochs=20,
     gpu_num=1,
+    o_tag_class_weight=0.01,    # O tag class weight for training 
     distributed_backend=None
 ):
     trainer = Trainer(max_epochs=epochs, gpus=gpu_num, distributed_backend=distributed_backend)
@@ -30,6 +31,7 @@ def train(
     model_args["optimizer"] = optimizer
     model_args["intent_optimizer_lr"] = intent_optimizer_lr
     model_args["entity_optimizer_lr"] = entity_optimizer_lr
+    model_args["o_tag_class_weight"] = o_tag_class_weight
 
     hparams = Namespace(**model_args)
     model = ElectrasaClassifier(hparams)

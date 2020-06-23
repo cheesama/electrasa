@@ -8,7 +8,10 @@ from torch.optim.lr_scheduler import StepLR, ReduceLROnPlateau
 from pytorch_lightning import Trainer
 from pytorch_lightning.metrics.functional import accuracy, auroc, f1_score
 
-from .dataset.intent_entity_dataset import RasaIntentEntityDataset, token_concat_collate_fn
+from .dataset.intent_entity_dataset import (
+    RasaIntentEntityDataset,
+    token_concat_collate_fn,
+)
 from .model.models import KoELECTRAFineTuner
 
 import os, sys
@@ -18,6 +21,7 @@ import dill
 import torch
 import torch.nn as nn
 import pytorch_lightning as pl
+
 
 class ElectrasaClassifier(pl.LightningModule):
     def __init__(self, hparams):
@@ -29,16 +33,24 @@ class ElectrasaClassifier(pl.LightningModule):
 
         self.dataset = RasaIntentEntityDataset(markdown_lines=self.hparams.nlu_data)
 
-        self.model = KoELECTRAFineTuner(len(self.dataset.intent_dict), len(self.dataset.entity_dict))
+        self.model = KoELECTRAFineTuner(
+            len(self.dataset.intent_dict), len(self.dataset.entity_dict)
+        )
         self.train_ratio = self.hparams.train_ratio
         self.batch_size = self.hparams.batch_size
         self.optimizer = self.hparams.optimizer
         self.intent_optimizer_lr = self.hparams.intent_optimizer_lr
         self.entity_optimizer_lr = self.hparams.entity_optimizer_lr
+        self.o_tag_class_weight = self.hparams.o_tag_class_weight
 
         self.intent_loss_fn = nn.CrossEntropyLoss()
         # reduce O tag class weight to figure out entity imbalance distribution
-        self.entity_loss_fn = nn.CrossEntropyLoss(weight=torch.Tensor([0.05] + [1.0] * (len(self.dataset.get_entity_idx()) - 1)))
+        self.entity_loss_fn = nn.CrossEntropyLoss(
+            weight=torch.Tensor(
+                [self.o_tag_class_weight]
+                + [1.0] * (len(self.dataset.get_entity_idx()) - 1)
+            )
+        )
 
     def forward(self, x):
         return self.model(x)
@@ -52,13 +64,13 @@ class ElectrasaClassifier(pl.LightningModule):
 
         self.hparams.intent_label = self.get_intent_label()
         self.hparams.entity_label = self.get_entity_label()
-    
+
     def get_intent_label(self):
         self.intent_dict = {}
         for k, v in self.dataset.intent_dict.items():
             self.intent_dict[str(v)] = k
-        return self.intent_dict 
-    
+        return self.intent_dict
+
     def get_entity_label(self):
         self.entity_dict = {}
         for k, v in self.dataset.entity_dict.items():
@@ -70,7 +82,7 @@ class ElectrasaClassifier(pl.LightningModule):
             self.train_dataset,
             batch_size=self.batch_size,
             num_workers=multiprocessing.cpu_count(),
-            collate_fn=token_concat_collate_fn
+            collate_fn=token_concat_collate_fn,
         )
         return train_loader
 
@@ -79,7 +91,7 @@ class ElectrasaClassifier(pl.LightningModule):
             self.val_dataset,
             batch_size=self.batch_size,
             num_workers=multiprocessing.cpu_count(),
-            collate_fn=token_concat_collate_fn
+            collate_fn=token_concat_collate_fn,
         )
         return val_loader
 
@@ -124,7 +136,9 @@ class ElectrasaClassifier(pl.LightningModule):
             }
 
         if optimizer_idx == 1:
-            entity_loss = self.entity_loss_fn(entity_pred.transpose(1, 2), entity_idx.long(),)
+            entity_loss = self.entity_loss_fn(
+                entity_pred.transpose(1, 2), entity_idx.long(),
+            )
             tensorboard_logs["train/entity/loss"] = entity_loss
 
             return {
@@ -145,15 +159,15 @@ class ElectrasaClassifier(pl.LightningModule):
         entity_f1 = f1_score(entity_pred.argmax(2), entity_idx)
 
         intent_loss = self.intent_loss_fn(intent_pred, intent_idx.long(),)
-        entity_loss = self.entity_loss_fn(entity_pred.transpose(1, 2), entity_idx.long(),)
+        entity_loss = self.entity_loss_fn(
+            entity_pred.transpose(1, 2), entity_idx.long(),
+        )
 
         return {
             "val_intent_acc": torch.Tensor([intent_acc]),
             "val_intent_f1": torch.Tensor([intent_f1]),
-
             "val_entity_acc": torch.Tensor([entity_acc]),
             "val_entity_f1": torch.Tensor([entity_f1]),
-
             "val_intent_loss": intent_loss,
             "val_entity_loss": entity_loss,
             "val_loss": intent_loss + entity_loss,
@@ -166,7 +180,9 @@ class ElectrasaClassifier(pl.LightningModule):
         avg_entity_acc = torch.stack([x["val_entity_acc"] for x in outputs]).mean()
         avg_entity_f1 = torch.stack([x["val_entity_f1"] for x in outputs]).mean()
 
-        print (f'intent_acc : {avg_intent_acc}, intent_f1 : {avg_intent_f1}, entity_acc : {avg_entity_acc}, entity_f1 : {avg_entity_f1}')  
+        print(
+            f"intent_acc : {avg_intent_acc}, intent_f1 : {avg_intent_f1}, entity_acc : {avg_entity_acc}, entity_f1 : {avg_entity_f1}"
+        )
 
         tensorboard_logs = {
             "val/loss": avg_loss,
