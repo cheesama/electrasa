@@ -139,14 +139,21 @@ class ElectrasaClassifier(pl.LightningModule):
         intent_pred, entity_pred = self.forward(tokens)
 
         intent_acc = accuracy(intent_pred.argmax(1), intent_idx)
+        intent_f1 = f1_score(intent_pred.argmax(1), intent_idx)
+
         entity_acc = accuracy(entity_pred.argmax(2), entity_idx)
+        entity_f1 = f1_score(entity_pred.argmax(2), entity_idx)
 
         intent_loss = self.intent_loss_fn(intent_pred, intent_idx.long(),)
         entity_loss = self.entity_loss_fn(entity_pred.transpose(1, 2), entity_idx.long(),)
 
         return {
             "val_intent_acc": torch.Tensor([intent_acc]),
+            "val_intent_f1": torch.Tensor([intent_f1]),
+
             "val_entity_acc": torch.Tensor([entity_acc]),
+            "val_entity_f1": torch.Tensor([entity_f1]),
+
             "val_intent_loss": intent_loss,
             "val_entity_loss": entity_loss,
             "val_loss": intent_loss + entity_loss,
@@ -155,14 +162,18 @@ class ElectrasaClassifier(pl.LightningModule):
     def validation_epoch_end(self, outputs):
         avg_loss = torch.stack([x["val_loss"] for x in outputs]).mean()
         avg_intent_acc = torch.stack([x["val_intent_acc"] for x in outputs]).mean()
+        avg_intent_f1 = torch.stack([x["val_intent_f1"] for x in outputs]).mean()
         avg_entity_acc = torch.stack([x["val_entity_acc"] for x in outputs]).mean()
+        avg_entity_f1 = torch.stack([x["val_entity_f1"] for x in outputs]).mean()
 
-        print (f'intent_acc : {avg_intent_acc}, entity_acc : {avg_entity_acc}')  
+        print (f'intent_acc : {avg_intent_acc}, intent_f1 : {avg_intent_f1}, entity_acc : {avg_entity_acc}, entity_f1 : {avg_entity_f1}')  
 
         tensorboard_logs = {
             "val/loss": avg_loss,
             "val/intent_acc": avg_intent_acc,
+            "val/intent_f1": avg_intent_f1,
             "val/entity_acc": avg_entity_acc,
+            "val/entity_f1": avg_entity_f1,
         }
 
         return {
