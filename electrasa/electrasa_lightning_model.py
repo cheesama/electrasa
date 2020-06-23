@@ -50,7 +50,6 @@ class ElectrasaClassifier(pl.LightningModule):
                 [self.o_tag_class_weight]
                 + [1.0] * (len(self.dataset.get_entity_idx()) - 1)
             ),
-            ignore_index=0,  # ignore padding token index
         )
 
     def forward(self, x):
