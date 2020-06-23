@@ -14,8 +14,8 @@ def train(
     train_ratio=0.8,
     batch_size=128,
     optimizer="Adam",
-    intent_optimizer_lr=1e-5,
-    entity_optimizer_lr=1e-5,
+    intent_optimizer_lr=5e-5,
+    entity_optimizer_lr=5e-5,
     epochs=20,
     gpu_num=1,
     distributed_backend=None
