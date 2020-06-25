@@ -96,21 +96,31 @@ class ElectrasaClassifier(pl.LightningModule):
         return val_loader
 
     def configure_optimizers(self):
-        intent_optimizer = eval(
-            f"{self.optimizer}(self.parameters(), lr={self.intent_optimizer_lr})"
-        )
-        entity_optimizer = eval(
-            f"{self.optimizer}(self.parameters(), lr={self.entity_optimizer_lr})"
-        )
+        optimizers = [
+            eval(
+                f"{self.optimizer}(self.model.intent_embedding.parameters(), lr={self.intent_optimizer_lr})"
+            ),
+            eval(
+                f"{self.optimizer}(self.model.entity_embedding.parameters(), lr={self.entity_optimizer_lr})"
+            ),
+        ]
 
-        return (
-            [intent_optimizer, entity_optimizer],
-            # [StepLR(intent_optimizer, step_size=1),StepLR(entity_optimizer, step_size=1),],
-            [
-                ReduceLROnPlateau(intent_optimizer, patience=1),
-                ReduceLROnPlateau(entity_optimizer, patience=1),
-            ],
-        )
+        schedulers = [
+            {
+                "scheduler": ReduceLROnPlateau(optimizers[0], patience=1),
+                "monitor": "val_intent_f1",
+                "interval": "epoch",
+                "frequency": 1,
+            },
+            {
+                "scheduler": ReduceLROnPlateau(optimizers[1], patience=1),
+                "monitor": "val_entity_f1",
+                "interval": "epoch",
+                "frequency": 1,
+            },
+        ]
+
+        return optimizers, schedulers
 
     def training_step(self, batch, batch_idx, optimizer_idx):
         self.model.train()
@@ -180,10 +190,10 @@ class ElectrasaClassifier(pl.LightningModule):
         avg_entity_acc = torch.stack([x["val_entity_acc"] for x in outputs]).mean()
         avg_entity_f1 = torch.stack([x["val_entity_f1"] for x in outputs]).mean()
 
-        print ()
-        print (f"intent_acc : {avg_intent_acc}, intent_f1 : {avg_intent_f1}") 
-        print (f"entity_acc : {avg_entity_acc}, entity_f1 : {avg_entity_f1}")
-        print ()
+        print()
+        print(f"intent_acc : {avg_intent_acc}, intent_f1 : {avg_intent_f1}")
+        print(f"entity_acc : {avg_entity_acc}, entity_f1 : {avg_entity_f1}")
+        print()
 
         tensorboard_logs = {
             "val/loss": avg_loss,
@@ -195,6 +205,8 @@ class ElectrasaClassifier(pl.LightningModule):
 
         return {
             "val_loss": avg_loss,
+            "val_intent_f1": avg_intent_f1,
+            "val_entity_f1": avg_entity_f1,
             "log": tensorboard_logs,
             "progress_bar": tensorboard_logs,
         }
