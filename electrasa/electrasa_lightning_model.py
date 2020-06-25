@@ -98,10 +98,10 @@ class ElectrasaClassifier(pl.LightningModule):
     def configure_optimizers(self):
         optimizers = [
             eval(
-                f"{self.optimizer}(self.model.intent_embedding.parameters(), lr={self.intent_optimizer_lr})"
+                f"{self.optimizer}(self.parameters(), lr={self.intent_optimizer_lr})"
             ),
             eval(
-                f"{self.optimizer}(self.model.entity_embedding.parameters(), lr={self.entity_optimizer_lr})"
+                f"{self.optimizer}(self.parameters(), lr={self.entity_optimizer_lr})"
             ),
         ]
 
