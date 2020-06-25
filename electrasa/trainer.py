@@ -45,8 +45,8 @@ def train(
     model_args["optimizer"] = optimizer
     model_args["intent_optimizer_lr"] = intent_optimizer_lr
     model_args["entity_optimizer_lr"] = entity_optimizer_lr
-    model_args["intent_loss_wieght"] = intent_loss_weight
-    model_args["entity_loss_wieght"] = entity_loss_weight
+    model_args["intent_loss_weight"] = intent_loss_weight
+    model_args["entity_loss_weight"] = entity_loss_weight
     model_args["o_tag_class_weight"] = o_tag_class_weight
 
     hparams = Namespace(**model_args)
