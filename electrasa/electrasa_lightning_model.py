@@ -41,6 +41,8 @@ class ElectrasaClassifier(pl.LightningModule):
         self.optimizer = self.hparams.optimizer
         self.intent_optimizer_lr = self.hparams.intent_optimizer_lr
         self.entity_optimizer_lr = self.hparams.entity_optimizer_lr
+        self.intent_loss_weight = self.hparams.intent_loss_weight
+        self.entity_loss_weight = self.hparams.entity_loss_weight
         self.o_tag_class_weight = self.hparams.o_tag_class_weight
 
         self.intent_loss_fn = nn.CrossEntropyLoss()
@@ -137,7 +139,7 @@ class ElectrasaClassifier(pl.LightningModule):
         }
 
         if optimizer_idx == 0:
-            intent_loss = self.intent_loss_fn(intent_pred, intent_idx.long(),)
+            intent_loss = self.intent_loss_fn(intent_pred, intent_idx.long(),) * self.intent_loss_weight
             tensorboard_logs["train/intent/loss"] = intent_loss
 
             return {
@@ -146,9 +148,7 @@ class ElectrasaClassifier(pl.LightningModule):
             }
 
         if optimizer_idx == 1:
-            entity_loss = self.entity_loss_fn(
-                entity_pred.transpose(1, 2), entity_idx.long(),
-            )
+            entity_loss = self.entity_loss_fn(entity_pred.transpose(1, 2), entity_idx.long()) * self.entity_loss_weight
             tensorboard_logs["train/entity/loss"] = entity_loss
 
             return {

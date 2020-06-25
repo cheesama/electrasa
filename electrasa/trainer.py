@@ -15,6 +15,8 @@ def train(
     optimizer="Adam",
     intent_optimizer_lr=2e-4,
     entity_optimizer_lr=8e-4,
+    intent_loss_weight=1.0,
+    entity_loss_weight=1.0,
     epochs=20,
     batch_size=None,
     gpu_num=1,
@@ -23,7 +25,7 @@ def train(
 ):
     if batch_size is None:
         trainer = Trainer(
-            auto_scale_batch_size="binsearch",
+            auto_scale_batch_size="power",
             max_epochs=epochs,
             gpus=gpu_num,
             distributed_backend=distributed_backend,
@@ -43,6 +45,8 @@ def train(
     model_args["optimizer"] = optimizer
     model_args["intent_optimizer_lr"] = intent_optimizer_lr
     model_args["entity_optimizer_lr"] = entity_optimizer_lr
+    model_args["intent_loss_wieght"] = intent_loss_weight
+    model_args["entity_loss_wieght"] = entity_loss_weight
     model_args["o_tag_class_weight"] = o_tag_class_weight
 
     hparams = Namespace(**model_args)
