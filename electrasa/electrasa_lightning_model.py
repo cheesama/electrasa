@@ -37,6 +37,7 @@ class ElectrasaClassifier(pl.LightningModule):
             len(self.dataset.intent_dict), len(self.dataset.entity_dict)
         )
         self.train_ratio = self.hparams.train_ratio
+        self.batch_size = self.hparams.batch_size
         self.optimizer = self.hparams.optimizer
         self.intent_optimizer_lr = self.hparams.intent_optimizer_lr
         self.entity_optimizer_lr = self.hparams.entity_optimizer_lr
