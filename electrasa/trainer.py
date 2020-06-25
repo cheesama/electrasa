@@ -12,22 +12,25 @@ import torch
 def train(
     file_path,
     train_ratio=0.8,
-    batch_size=128,
     optimizer="Adam",
-    intent_optimizer_lr=5e-5,
-    entity_optimizer_lr=5e-5,
+    intent_optimizer_lr=2e-4,
+    entity_optimizer_lr=8e-4,
     epochs=20,
     gpu_num=1,
-    o_tag_class_weight=0.01,    # O tag class weight for training 
-    distributed_backend=None
+    o_tag_class_weight=0.05,  # O tag class weight for training
+    distributed_backend=None,
 ):
-    trainer = Trainer(max_epochs=epochs, gpus=gpu_num, distributed_backend=distributed_backend)
+    trainer = Trainer(
+        auto_scale_batch_size="binsearch",
+        max_epochs=epochs,
+        gpus=gpu_num,
+        distributed_backend=distributed_backend,
+    )
 
     model_args = {}
     model_args["epochs"] = epochs
     model_args["nlu_data"] = open(file_path, encoding="utf-8").readlines()
     model_args["train_ratio"] = train_ratio
-    model_args["batch_size"] = batch_size
     model_args["optimizer"] = optimizer
     model_args["intent_optimizer_lr"] = intent_optimizer_lr
     model_args["entity_optimizer_lr"] = entity_optimizer_lr
