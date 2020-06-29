@@ -214,7 +214,8 @@ class RasaIntentEntityDataset(torch.utils.data.Dataset):
                         entity_idx[token_seq] = entity_info["entity_idx"]
                         break
 
-        entity_idx = torch.from_numpy(entity_idx)
+        # Ignore first [CLS] token from entity prediction
+        entity_idx = torch.from_numpy(entity_idx[1:])
 
         return tokens, intent_idx, entity_idx
 
