@@ -18,7 +18,7 @@ class KoELECTRAFineTuner(nn.Module):
         feature = self.backbone(tokens)[0]
 
         intent_pred = self.intent_embedding(feature[:,0,:]) #forward only first [CLS] token
-        entity_pred = self.entity_embedding(feature) 
+        entity_pred = self.entity_embedding(feature[:,1:,:]) 
 
         return intent_pred, entity_pred
 
