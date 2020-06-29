@@ -43,11 +43,9 @@ class ElectrasaClassifier(pl.LightningModule):
         self.entity_optimizer_lr = self.hparams.entity_optimizer_lr
         self.intent_loss_weight = self.hparams.intent_loss_weight
         self.entity_loss_weight = self.hparams.entity_loss_weight
-        self.o_tag_class_weight = self.hparams.o_tag_class_weight
 
         self.intent_loss_fn = nn.CrossEntropyLoss()
-        # reduce O tag class weight to figure out entity imbalance distribution
-        #self.entity_loss_fn = nn.CrossEntropyLoss(weight=torch.Tensor([self.o_tag_class_weight]+ [1.0] * (len(self.dataset.get_entity_idx()) - 1)))
+        # ignore O tag class label to figure out entity imbalance distribution
         self.entity_loss_fn = nn.CrossEntropyLoss(ignore_index=0)
 
     def forward(self, x):

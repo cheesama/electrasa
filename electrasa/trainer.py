@@ -20,7 +20,6 @@ def train(
     epochs=20,
     batch_size=None,
     gpu_num=1,
-    o_tag_class_weight=0.05,  # O tag class weight for training
     distributed_backend=None,
 ):
     if batch_size is None:
@@ -47,7 +46,6 @@ def train(
     model_args["entity_optimizer_lr"] = entity_optimizer_lr
     model_args["intent_loss_weight"] = intent_loss_weight
     model_args["entity_loss_weight"] = entity_loss_weight
-    model_args["o_tag_class_weight"] = o_tag_class_weight
 
     hparams = Namespace(**model_args)
     model = ElectrasaClassifier(hparams)
