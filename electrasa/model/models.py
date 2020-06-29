@@ -15,7 +15,7 @@ class KoELECTRAFineTuner(nn.Module):
         self.entity_embedding = nn.Linear(self.backbone.config.hidden_size, self.entity_class_num)
 
     def forward(self, tokens):
-        feature = self.backbone(tokens)[0]
+        feature = self.backbone(tokens, position_ids=torch.arange(tokens.size(1)).repeat(tokens.size(0), 1).type_as(tokens))[0]
 
         intent_pred = self.intent_embedding(feature[:,0,:]) #forward only first [CLS] token
         entity_pred = self.entity_embedding(feature[:,1:,:]) #except first [CLS] token

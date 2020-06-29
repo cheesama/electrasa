@@ -74,10 +74,10 @@ class RasaIntentEntityDataset(torch.utils.data.Dataset):
         #dataset tokenizer setting
         self.tokenizer = ElectraTokenizer.from_pretrained(default_model_path)
 
-        self.pad_token_id = 0
-        self.unk_token_id = 1
-        self.eos_token_id = 3 #[SEP] token
-        self.bos_token_id = 2 #[CLS] token
+        self.pad_token_id = self.tokenizer.pad_token_id
+        self.unk_token_id = self.tokenizer.unk_token_id 
+        self.eos_token_id = self.tokenizer.sep_token_id #[SEP] token
+        self.bos_token_id = self.tokenizer.cls_token_id #[CLS] token
 
         intent_value_list = sorted(intent_value_list)
         for intent_value in intent_value_list:

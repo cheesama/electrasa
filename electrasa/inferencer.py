@@ -65,8 +65,9 @@ class Inferencer:
         # mapping entity result
         entities = []
 
-        # except first & last sequnce token whcih indicate BOS or [CLS] token & EOS or [SEP] token
-        _, entity_indices = torch.max((entity_result)[0][1:-1, :], dim=1)
+        # except first & last sequnce token whcih indicate EOS or [SEP] token
+        # SOS or [CLS] token already excepted in model forward step
+        _, entity_indices = torch.max((entity_result)[0][:-1, :], dim=1)
         start_idx = -1
 
         #print (self.model.dataset.tokenize(text))
