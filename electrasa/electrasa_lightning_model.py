@@ -46,9 +46,12 @@ class ElectrasaClassifier(pl.LightningModule):
 
         self.intent_loss_fn = nn.CrossEntropyLoss()
         # ignore O tag class label to figure out entity imbalance distribution
-        self.entity_loss_fn = nn.CrossEntropyLoss(ignore_index=0)
+        self.entity_loss_fn = nn.CrossEntropyLoss()
 
-    def forward(self, x):
+    def forward(self, x, entity_labels=None):
+        if entity_labels is not None:
+            return self.model(x, entity_labels)
+
         return self.model(x)
 
     def prepare_data(self):
@@ -122,10 +125,10 @@ class ElectrasaClassifier(pl.LightningModule):
         self.model.train()
 
         tokens, intent_idx, entity_idx = batch
-        intent_pred, entity_pred = self.forward(tokens)
+        intent_pred, entity_pred, entity_loss = self.forward(tokens, entity_idx)
 
         intent_acc = accuracy(intent_pred.argmax(1), intent_idx)
-        entity_acc = accuracy(entity_pred.argmax(2), entity_idx)
+        entity_acc = accuracy(torch.tensor(entity_pred), entity_idx)
 
         tensorboard_logs = {
             "train/intent/acc": intent_acc,
@@ -142,7 +145,7 @@ class ElectrasaClassifier(pl.LightningModule):
             }
 
         if optimizer_idx == 1:
-            entity_loss = self.entity_loss_fn(entity_pred.transpose(1, 2), entity_idx.long()) * self.entity_loss_weight
+            entity_loss = -entity_loss * self.entity_loss_weight
             tensorboard_logs["train/entity/loss"] = entity_loss
 
             return {
@@ -159,13 +162,14 @@ class ElectrasaClassifier(pl.LightningModule):
         intent_acc = accuracy(intent_pred.argmax(1), intent_idx)
         intent_f1 = f1_score(intent_pred.argmax(1), intent_idx)
 
-        entity_acc = accuracy(entity_pred.argmax(2), entity_idx)
-        entity_f1 = f1_score(entity_pred.argmax(2), entity_idx)
+        if type(entity_pred) == torch.tensor:
+            entity_acc = accuracy(entity_pred.argmax(2), entity_idx)
+            entity_f1 = f1_score(entity_pred.argmax(2), entity_idx)
+        else:
+            entity_acc = accuracy(torch.tensor(entity_pred), entity_idx)
+            entity_f1 = f1_score(torch.tensor(entity_pred), entity_idx)
 
-        intent_loss = self.intent_loss_fn(intent_pred, intent_idx.long(),)
-        entity_loss = self.entity_loss_fn(
-            entity_pred.transpose(1, 2), entity_idx.long(),
-        )
+        intent_loss = self.intent_loss_fn(intent_pred, intent_idx.long())
 
         return {
             "val_intent_acc": torch.Tensor([intent_acc]),
@@ -173,12 +177,9 @@ class ElectrasaClassifier(pl.LightningModule):
             "val_entity_acc": torch.Tensor([entity_acc]),
             "val_entity_f1": torch.Tensor([entity_f1]),
             "val_intent_loss": intent_loss,
-            "val_entity_loss": entity_loss,
-            "val_loss": intent_loss + entity_loss,
         }
 
     def validation_epoch_end(self, outputs):
-        avg_loss = torch.stack([x["val_loss"] for x in outputs]).mean()
         avg_intent_acc = torch.stack([x["val_intent_acc"] for x in outputs]).mean()
         avg_intent_f1 = torch.stack([x["val_intent_f1"] for x in outputs]).mean()
         avg_entity_acc = torch.stack([x["val_entity_acc"] for x in outputs]).mean()
@@ -190,7 +191,6 @@ class ElectrasaClassifier(pl.LightningModule):
         print()
 
         tensorboard_logs = {
-            "val/loss": avg_loss,
             "val/intent_acc": avg_intent_acc,
             "val/intent_f1": avg_intent_f1,
             "val/entity_acc": avg_entity_acc,
@@ -198,7 +198,6 @@ class ElectrasaClassifier(pl.LightningModule):
         }
 
         return {
-            "val_loss": avg_loss,
             "val_intent_f1": avg_intent_f1,
             "val_entity_f1": avg_entity_f1,
             "log": tensorboard_logs,
