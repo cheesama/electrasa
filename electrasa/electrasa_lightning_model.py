@@ -128,7 +128,7 @@ class ElectrasaClassifier(pl.LightningModule):
         intent_pred, entity_pred, entity_loss = self.forward(tokens, entity_idx)
 
         intent_acc = accuracy(intent_pred.argmax(1), intent_idx)
-        entity_acc = accuracy(torch.tensor(entity_pred), entity_idx)
+        entity_acc = accuracy(torch.tensor(entity_pred).cpu(), entity_idx.cpu())
 
         tensorboard_logs = {
             "train/intent/acc": intent_acc,
@@ -163,7 +163,7 @@ class ElectrasaClassifier(pl.LightningModule):
         intent_f1 = f1_score(intent_pred.argmax(1), intent_idx)
 
         entity_acc = accuracy(torch.tensor(entity_pred).cpu(), entity_idx.cpu())
-        entity_f1 = f1_score(torch.tensor(entity_pred), entity_idx)
+        entity_f1 = f1_score(torch.tensor(entity_pred).cpu(), entity_idx.cpu())
 
         intent_loss = self.intent_loss_fn(intent_pred, intent_idx.long())
 
