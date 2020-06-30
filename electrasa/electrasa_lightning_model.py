@@ -6,7 +6,7 @@ from torch.optim import Adam
 from torch.optim.lr_scheduler import StepLR, ReduceLROnPlateau
 
 from pytorch_lightning import Trainer
-from pytorch_lightning.metrics.functional import accuracy, auroc, f1_score
+from torchnlp.metrics import get_accuracy, get_token_accuracy
 
 from .dataset.intent_entity_dataset import (
     RasaIntentEntityDataset,
@@ -107,13 +107,13 @@ class ElectrasaClassifier(pl.LightningModule):
         schedulers = [
             {
                 "scheduler": ReduceLROnPlateau(optimizers[0], patience=1),
-                "monitor": "val_intent_f1",
+                "monitor": "val_intent_acc",
                 "interval": "epoch",
                 "frequency": 1,
             },
             {
                 "scheduler": ReduceLROnPlateau(optimizers[1], patience=1),
-                "monitor": "val_entity_f1",
+                "monitor": "val_entity_acc",
                 "interval": "epoch",
                 "frequency": 1,
             },
@@ -127,8 +127,12 @@ class ElectrasaClassifier(pl.LightningModule):
         tokens, intent_idx, entity_idx = batch
         intent_pred, entity_pred, entity_loss = self.forward(tokens, entity_idx)
 
-        intent_acc = accuracy(intent_pred.argmax(1), intent_idx)
-        entity_acc = accuracy(torch.tensor(entity_pred).cpu(), entity_idx.cpu())
+        intent_acc = get_accuracy(intent_pred.argmax(1), intent_idx)[0]
+
+        if entity_idx.sum().item() == 0 or torch.tensor(entity_pred).sum().item() == 0:
+            entity_acc = get_token_accuracy(torch.tensor(entity_pred).cpu(), entity_idx.cpu())[0]
+        else:
+            entity_acc = get_token_accuracy(torch.tensor(entity_pred).cpu(), entity_idx.cpu(), ignore_index=self.dataset.pad_token_id)[0]
 
         tensorboard_logs = {
             "train/intent/acc": intent_acc,
@@ -157,45 +161,43 @@ class ElectrasaClassifier(pl.LightningModule):
         self.model.eval()
 
         tokens, intent_idx, entity_idx = batch
-        intent_pred, entity_pred = self.forward(tokens)
+        intent_pred, entity_pred, entity_loss = self.forward(tokens, entity_idx)
 
-        intent_acc = accuracy(intent_pred.argmax(1), intent_idx)
-        intent_f1 = f1_score(intent_pred.argmax(1), intent_idx)
+        intent_acc = get_accuracy(intent_pred.argmax(1), intent_idx)[0]
 
-        entity_acc = accuracy(torch.tensor(entity_pred).cpu(), entity_idx.cpu())
-        entity_f1 = f1_score(torch.tensor(entity_pred).cpu(), entity_idx.cpu())
+        if entity_idx.sum().item() == 0 or torch.tensor(entity_pred).sum().item() == 0:
+            entity_acc = get_token_accuracy(torch.tensor(entity_pred).cpu(), entity_idx.cpu())[0]
+        else:
+            entity_acc = get_token_accuracy(torch.tensor(entity_pred).cpu(), entity_idx.cpu(), ignore_index=self.dataset.pad_token_id)[0]
 
-        intent_loss = self.intent_loss_fn(intent_pred, intent_idx.long())
+        intent_loss = self.intent_loss_fn(intent_pred, intent_idx.long(),) * self.intent_loss_weight
+        entity_loss = -entity_loss * self.entity_loss_weight
 
         return {
             "val_intent_acc": torch.Tensor([intent_acc]),
-            "val_intent_f1": torch.Tensor([intent_f1]),
             "val_entity_acc": torch.Tensor([entity_acc]),
-            "val_entity_f1": torch.Tensor([entity_f1]),
-            "val_intent_loss": intent_loss,
+            "val_loss": intent_loss + entity_loss,
         }
 
     def validation_epoch_end(self, outputs):
         avg_intent_acc = torch.stack([x["val_intent_acc"] for x in outputs]).mean()
-        avg_intent_f1 = torch.stack([x["val_intent_f1"] for x in outputs]).mean()
         avg_entity_acc = torch.stack([x["val_entity_acc"] for x in outputs]).mean()
-        avg_entity_f1 = torch.stack([x["val_entity_f1"] for x in outputs]).mean()
+        avg_loss = torch.stack([x["val_loss"] for x in outputs]).mean()
 
         print()
-        print(f"intent_acc : {avg_intent_acc}, intent_f1 : {avg_intent_f1}")
-        print(f"entity_acc : {avg_entity_acc}, entity_f1 : {avg_entity_f1}")
+        print(f"intent_acc : {avg_intent_acc}, entity_acc : {avg_entity_acc}, val_loss : {avg_loss}")
         print()
 
         tensorboard_logs = {
             "val/intent_acc": avg_intent_acc,
-            "val/intent_f1": avg_intent_f1,
             "val/entity_acc": avg_entity_acc,
-            "val/entity_f1": avg_entity_f1,
+            "val/val_loss": avg_loss,
         }
 
         return {
-            "val_intent_f1": avg_intent_f1,
-            "val_entity_f1": avg_entity_f1,
+            "val_loss": avg_loss,
+            "val_intent_acc": avg_intent_acc,
+            "val_entity_acc": avg_entity_acc,
             "log": tensorboard_logs,
             "progress_bar": tensorboard_logs,
         }
