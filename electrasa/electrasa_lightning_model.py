@@ -46,7 +46,7 @@ class ElectrasaClassifier(pl.LightningModule):
 
         self.intent_loss_fn = nn.CrossEntropyLoss()
         # ignore O tag class label to figure out entity imbalance distribution
-        self.entity_loss_fn = nn.CrossEntropyLoss()
+        self.entity_loss_fn = nn.CrossEntropyLoss(ignore_index=self.dataset.pad_token_id)
 
     def forward(self, x, entity_labels=None):
         if entity_labels is not None:
