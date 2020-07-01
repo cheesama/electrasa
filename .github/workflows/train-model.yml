@@ -16,8 +16,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: HashiCorp - Setup Terraform
-      uses: hashicorp/setup-terraform@v1.1.0
+    - name: Install Terraform
+      uses: little-core-labs/install-terraform@v1.0.0
+    - name: Check Terraform Install
+      run: |
+        terraform -help
     - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
