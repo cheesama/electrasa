@@ -19,7 +19,7 @@ def train(
     entity_loss_weight=1.0,
     epochs=20,
     batch_size=None,
-    gpu_num=1,
+    gpu_num=0,
     distributed_backend=None,
 ):
     if batch_size is None:

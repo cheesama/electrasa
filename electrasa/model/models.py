@@ -25,8 +25,7 @@ class KoELECTRAFineTuner(nn.Module):
         entity_pred = self.entity_featurizer.decode(entity_feature)
 
         if entity_labels is not None:
-            mask = (tokens[:,1:] != self.pad_token_id)
-            entity_loss = self.entity_featurizer(entity_feature, entity_labels, mask=mask)
+            entity_loss = self.entity_featurizer(entity_feature, entity_labels, reduction='mean')
             return intent_pred, entity_pred, entity_loss
 
         return intent_pred, entity_pred
