@@ -13,10 +13,10 @@ CUSTOM_DATA
 
 # Configure the Microsoft Azure Provider
 provider "azurerm" {
-    subscription_id = az_subscription_id
-    client_id       = az_client_id
-    client_secret   = az_client_secret
-    tenant_id       = az_tenant_id
+    subscription_id = var.az_subscription_id
+    client_id       = var.az_client_id
+    client_secret   = var.az_client_secret
+    tenant_id       = var.az_tenant_id
     version = "~>2.0"
     features {}
 }
