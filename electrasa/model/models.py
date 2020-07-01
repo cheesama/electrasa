@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class KoELECTRAFineTuner(nn.Module):
-    def __init__(self, intent_class_num, entity_class_num, default_model_path='monologg/koelectra-small-v2-discriminator', pad_token_id=0):
+    def __init__(self, intent_class_num, entity_class_num, default_model_path='monologg/koelectra-small-v2-discriminator'):
         super(KoELECTRAFineTuner, self).__init__()
 
         self.intent_class_num = intent_class_num
