@@ -1,7 +1,7 @@
 locals {
     tags = {
         created-by  = "Terraform"
-        project     = var.project_name
+        project     = "electrasa-terraform-train"
         create-date = formatdate("YYYY-MM-DD", timestamp())
     }
     custom_data = <<CUSTOM_DATA
