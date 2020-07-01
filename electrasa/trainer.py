@@ -1,4 +1,6 @@
 from pytorch_lightning import Trainer
+from pytorch_lightning.callbacks import EarlyStopping, LearningRateLogger, model_checkpoint
+
 from argparse import Namespace
 
 from transformers import ElectraModel, ElectraTokenizer
@@ -21,19 +23,30 @@ def train(
     batch_size=None,
     gpu_num=0,
     distributed_backend=None,
+    checkpoint_name='electrasa_model'
 ):
+    early_stopping = EarlyStopping('val_loss')
+    lr_logger = LearningRateLogger()
+    checkpoint_callback = model_checkpoint.ModelCheckpoint(prefix=checkpoint_name)
+
     if batch_size is None:
         trainer = Trainer(
             auto_scale_batch_size="power",
             max_epochs=epochs,
             gpus=gpu_num,
             distributed_backend=distributed_backend,
+            early_stop_callback=early_stopping,
+            callbacks=[lr_logger],
+            checkpoint_callback=checkpoint_callback
         )
     else:
         trainer = Trainer(
             max_epochs=epochs,
             gpus=gpu_num,
             distributed_backend=distributed_backend,
+            early_stop_callback=early_stopping,
+            callbacks=[lr_logger],
+            checkpoint_callback=checkpoint_callback
         )
 
     model_args = {}
