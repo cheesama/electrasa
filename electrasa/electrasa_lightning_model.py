@@ -17,7 +17,6 @@ from .model.models import KoELECTRAFineTuner
 
 import os, sys
 import multiprocessing
-import dill
 
 import torch
 import torch.nn as nn
