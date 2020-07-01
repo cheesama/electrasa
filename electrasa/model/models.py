@@ -15,7 +15,6 @@ class KoELECTRAFineTuner(nn.Module):
         self.intent_embedding = nn.Linear(self.backbone.config.hidden_size, self.intent_class_num)
         self.entity_embedding = nn.Linear(self.backbone.config.hidden_size, self.entity_class_num)
         self.entity_featurizer = CRF(self.entity_class_num, batch_first=True)
-        self.pad_token_id = pad_token_id
 
     def forward(self, tokens, entity_labels=None):
         feature = self.backbone(tokens)[0]
