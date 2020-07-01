@@ -132,9 +132,9 @@ class ElectrasaClassifier(pl.LightningModule):
         intent_f1 = f1_score(intent_pred.argmax(1), intent_idx)
 
         if entity_idx.sum().item() == 0 or torch.tensor(entity_pred).sum().item() == 0:
-            entity_acc = get_token_accuracy(torch.tensor(entity_pred).cpu(), entity_idx.cpu())[0]
+            entity_acc = get_token_accuracy(entity_idx.cpu(), torch.tensor(entity_pred).cpu())[0]
         else:
-            entity_acc = get_token_accuracy(torch.tensor(entity_pred).cpu(), entity_idx.cpu(), ignore_index=self.dataset.pad_token_id)[0]
+            entity_acc = get_token_accuracy(entity_idx.cpu(), torch.tensor(entity_pred).cpu(), ignore_index=self.dataset.pad_token_id)[0]
 
         tensorboard_logs = {
             "train/intent/acc": intent_acc,
@@ -170,9 +170,9 @@ class ElectrasaClassifier(pl.LightningModule):
         intent_f1 = f1_score(intent_pred.argmax(1), intent_idx)
 
         if entity_idx.sum().item() == 0 or torch.tensor(entity_pred).sum().item() == 0:
-            entity_acc = get_token_accuracy(torch.tensor(entity_pred).cpu(), entity_idx.cpu())[0]
+            entity_acc = get_token_accuracy(entity_idx.cpu(), torch.tensor(entity_pred).cpu())[0]
         else:
-            entity_acc = get_token_accuracy(torch.tensor(entity_pred).cpu(), entity_idx.cpu(), ignore_index=self.dataset.pad_token_id)[0]
+            entity_acc = get_token_accuracy(entity_idx.cpu(), torch.tensor(entity_pred).cpu(), ignore_index=self.dataset.pad_token_id)[0]
 
         intent_loss = self.intent_loss_fn(intent_pred, intent_idx.long(),) * self.intent_loss_weight
         entity_loss = -entity_loss * self.entity_loss_weight
