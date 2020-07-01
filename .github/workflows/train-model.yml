@@ -21,6 +21,10 @@ jobs:
     - name: Terraform Setting
       run: |
         terraform init
+        export az_subscription_id = ${{ secrets.az_subscription_id }}
+        export az_client_id       = ${{ secrets.az_client_id }}
+        export az_client_secret   = ${{ secrets.az_client_secret }}
+        export az_tenant_id       = ${{ secrets.az_tenant_id }}
         terraform plan
     - name: Set up Python 3.8
       uses: actions/setup-python@v2
