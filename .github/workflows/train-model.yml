@@ -18,9 +18,10 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install Terraform
       uses: little-core-labs/install-terraform@v1.0.0
-    - name: Check Terraform Install
+    - name: Terraform Setting
       run: |
-        terraform -help
+        terraform init
+        terraform plan
     - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
