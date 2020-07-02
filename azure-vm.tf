@@ -21,6 +21,8 @@ locals {
 #!/bin/bash
 sudo -i 
 apt-get install -y wget git
+python --version
+pip3 install git+https://github.com/cheesama/electrasa.git
 CUSTOM_DATA
 }
 
