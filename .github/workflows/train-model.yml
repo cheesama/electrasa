@@ -17,10 +17,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Install Terraform
-      uses: little-core-labs/install-terraform@v1.0.0
-      with:
-        # Version of terraform to download
-        version: 0.12.28
+      run: |
+        apt-get update && apt-get install -y curl apt-transport-https vim gnupg2 unzip wget jq
+        curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+        wget https://releases.hashicorp.com/terraform/0.12.24/terraform_0.12.24_linux_amd64.zip && unzip terraform_0.12.24_linux_amd64.zip && mv terraform /usr/local/bin/
     - name: Terraform Setting
       run: |
         terraform init
