@@ -38,7 +38,8 @@ jobs:
         terraform apply -auto-approve
     - name: Model Training
       run: |
-        ssh azureuser@${{ steps.terraform_setting.outputs.ip_address }} && ls && exit
+        export ip_address=$(az vm show --resource-group RG-COMMBOT-VM-cheesama --name myVM -d --query [publicIps][0])
+        ssh azureuser@$ip_address && ls && exit
     - name: Destroy Resource
       run: |
         terraform destroy -auto-approve
