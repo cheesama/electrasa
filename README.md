@@ -26,13 +26,12 @@ K --> O
 L --> O
 M --> O
 N --> P(Predicted Intent Label)
-O --> Q(Entity Label 0)
-O --> R(Entity Label 1)
-O --> S(Entity Label ...)
-O --> T(Entity Label n-1)
+O --> U(CRF)
+U --> Q(Entity Label 0)
+U --> R(Entity Label 1)
+U --> S(Entity Label ...)
+U --> T(Entity Label n-1)
 ```
-
-Still work in progress
 
 ## Reference
 [KoELECTRA](https://github.com/monologg/KoELECTRA)

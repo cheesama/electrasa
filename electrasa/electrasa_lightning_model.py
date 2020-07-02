@@ -106,13 +106,13 @@ class ElectrasaClassifier(pl.LightningModule):
 
         schedulers = [
             {
-                "scheduler": ReduceLROnPlateau(optimizers[0], patience=1),
+                "scheduler": ReduceLROnPlateau(optimizers[0], patience=1, factor=0.5),
                 "monitor": "val_intent_f1",
                 "interval": "epoch",
                 "frequency": 1,
             },
             {
-                "scheduler": ReduceLROnPlateau(optimizers[1], patience=1),
+                "scheduler": ReduceLROnPlateau(optimizers[1], patience=1, factor=0.5),
                 "monitor": "val_entity_acc",
                 "interval": "epoch",
                 "frequency": 1,
