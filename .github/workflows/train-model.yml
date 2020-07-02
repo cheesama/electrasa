@@ -1,0 +1,56 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Training Model
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install Terraform
+      run: |
+        sudo apt-get update && sudo apt-get install -y curl apt-transport-https vim gnupg2 unzip wget jq
+        curl -sL https://aka.ms/InstallAzureCLIDeb | sudo -E bash
+        wget https://releases.hashicorp.com/terraform/0.12.24/terraform_0.12.24_linux_amd64.zip && unzip terraform_0.12.24_linux_amd64.zip && sudo mv terraform /usr/local/bin/
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    - name: Terraform Setting
+      run: |
+        terraform init
+        export TF_VAR_az_subscription_id=${{ secrets.az_subscription_id }}
+        export TF_VAR_az_client_id=${{ secrets.az_client_id }}
+        export TF_VAR_az_client_secret=${{ secrets.az_client_secret }}
+        export TF_VAR_az_tenant_id=${{ secrets.az_tenant_id }}
+        
+        echo $TF_VAR_az_subscription_id
+        echo $TF_VAR_az_client_id
+        echo $TF_VAR_az_client_secret
+        echo $TF_VAR_az_tenant_id
+        
+        terraform plan
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 pytest
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install .
+    - name: Train NLU data
+      run: |
+        wget ${{ secrets.NLU_FILE_PATH }} -P ~
+        python tests/test_KoELECTRA_backbone.py
+        
