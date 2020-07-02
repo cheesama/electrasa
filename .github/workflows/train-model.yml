@@ -41,7 +41,7 @@ jobs:
         export ip_address=$(az vm show --resource-group RG-COMMBOT-VM-cheesama --name myVM -d --query [publicIps][0])
         echo $ip_address
         sleep 10s
-        ssh -oStrictHostKeyChecking=no azureuser@$ip_address && ls && exit
+        ssh -t -t azureuser@$ip_address && ls && exit
     - name: Destroy Resource
       run: |
         terraform destroy -auto-approve
