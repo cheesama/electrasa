@@ -39,7 +39,7 @@ jobs:
     - name: Model Training
       run: |
         export ip_address=$(az vm show --resource-group RG-COMMBOT-VM-cheesama --name myVM -d --query [publicIps][0])
-        ssh azureuser@$ip_address && ls && exit
+        ssh -oStrictHostKeyChecking=no azureuser@$ip_address && ls && exit
     - name: Destroy Resource
       run: |
         terraform destroy -auto-approve
