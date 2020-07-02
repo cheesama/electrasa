@@ -19,10 +19,13 @@ locals {
     }
     custom_data = <<CUSTOM_DATA
 #!/bin/bash
-sudo -i 
-apt-get install -y wget git
-python --version
-pip3 install git+https://github.com/cheesama/electrasa.git
+sudo update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1
+sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.6 2
+sudo apt-get update && sudo apt-get install -y python3-pip
+pip3 install --upgrade pip
+alias pip=pip3 >> ~/.bashrc 
+source ~/.bashrc
+pip install git+https://github.com/cheesama/electrasa.git
 CUSTOM_DATA
 }
 
