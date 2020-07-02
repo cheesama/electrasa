@@ -32,5 +32,7 @@ O --> S(Entity Label ...)
 O --> T(Entity Label n-1)
 ```
 
+Still work in progress
+
 ## Reference
 [KoELECTRA](https://github.com/monologg/KoELECTRA)
