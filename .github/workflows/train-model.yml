@@ -26,6 +26,7 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     - name: Terraform Setting
+      id: terraform_setting
       run: |
         terraform init
         export TF_VAR_az_subscription_id=${{ secrets.az_subscription_id }}
@@ -34,8 +35,11 @@ jobs:
         export TF_VAR_az_tenant_id=${{ secrets.az_tenant_id }}
         
         terraform plan
-        
         terraform apply -auto-approve
-        
+    - name: Model Training
+      run: |
+        ssh azureuser@${{ steps.terraform_setting.outputs.ip_address }} && ls && exit
+    - name: Destroy Resource
+      run: |
         terraform destroy -auto-approve
         
