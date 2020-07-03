@@ -200,4 +200,4 @@ resource "azurerm_linux_virtual_machine" "myterraformvm" {
     }
 }
 
-output "ip_address" { value = "${azurerm_public_ip.myterraformpublicip.ip_address}" }
+output "ip_address" { value = "${azurerm_public_ip.myterraformpublicip.id}" }
