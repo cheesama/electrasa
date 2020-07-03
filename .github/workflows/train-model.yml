@@ -36,8 +36,4 @@ jobs:
         
         terraform plan
         terraform apply -auto-approve
-    - name: Destroy Resource
-      if: always()
-      run: |
-        terraform destroy -auto-approve
-        
+        terraform destroy -auto-approve    
