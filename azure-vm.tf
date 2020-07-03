@@ -153,13 +153,6 @@ resource "azurerm_storage_account" "mystorageaccount" {
     }
 }
 
-# Create (and display) an SSH key
-resource "tls_private_key" "example_ssh" {
-  algorithm = "RSA"
-  rsa_bits = 4096
-}
-
-
 # Create virtual machine
 resource "azurerm_linux_virtual_machine" "myterraformvm" {
     name                  = "myVM"
@@ -181,13 +174,14 @@ resource "azurerm_linux_virtual_machine" "myterraformvm" {
         version   = "latest"
     }
 
-    computer_name  = "cheesama-model-train-vm"
-    admin_username = "azureuser"
-    disable_password_authentication = true
-        
-    admin_ssh_key {
-        username       = "azureuser"
-        public_key     = tls_private_key.example_ssh.public_key_openssh
+    os_profile {
+      computer_name  = "${var.resource_prefix}TFVM"
+      admin_username = var.admin_username
+      admin_password = var.admin_password
+    }
+
+    os_profile_linux_config {
+      disable_password_authentication = false
     }
 
     boot_diagnostics {
@@ -198,8 +192,19 @@ resource "azurerm_linux_virtual_machine" "myterraformvm" {
         environment = "Terraform VM"
     }
 
-    custom_data = base64encode(local.custom_data)
+    provisioner "remote-exec" {
+      connection {
+        host     = azurerm_linux_virtual_machine.myterraformvm.public_ip_address
+        type     = "ssh"
+        user     = var.admin_username
+        password = var.admin_password
+      }
+
+      inline = [
+        "ls -a",
+        "cat newfile.txt",
+      ]
+    }
 }
 
-output "tls_private_key" { value = "${tls_private_key.example_ssh.private_key_pem}" }
 output "ip_address" { value = "${azurerm_linux_virtual_machine.myterraformvm.public_ip_address}" }
