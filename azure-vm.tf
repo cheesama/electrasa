@@ -10,12 +10,6 @@ variable "az_client_secret" {
 variable "az_tenant_id" {
   description = "The Tenant ID for the Service Principal to use for AKS"
 }
-variable "admin_username" {
-  description = "Created VM user name"
-}
-variable "admin_password" {
-  description = "Created VM user password"
-}
 
 locals {
     tags = {
@@ -37,10 +31,8 @@ CUSTOM_DATA
 
 # Configure the Microsoft Azure Provider
 provider "azurerm" {
-    subscription_id = var.az_subscription_id
-    client_id       = var.az_client_id
-    client_secret   = var.az_client_secret
-    tenant_id       = var.az_tenant_id
+    # The "feature" block is required for AzureRM provider 2.x. 
+    # If you're using version 1.x, the "features" block is not allowed.
     version = "~>2.0"
     features {}
 }
@@ -48,19 +40,23 @@ provider "azurerm" {
 # Create a resource group if it doesn't exist
 resource "azurerm_resource_group" "myterraformgroup" {
     name     = "RG-COMMBOT-VM-cheesama"
-    location = "koreacentral"
+    location = "eastus"
 
-    tags = local.tags
+    tags = {
+        environment = "Terraform VM"
+    }
 }
 
 # Create virtual network
 resource "azurerm_virtual_network" "myterraformnetwork" {
     name                = "myVnet"
     address_space       = ["10.0.0.0/16"]
-    location            = "koreacentral"
+    location            = "eastus"
     resource_group_name = azurerm_resource_group.myterraformgroup.name
 
-    tags = local.tags
+    tags = {
+        environment = "Terraform VM"
+    }
 }
 
 # Create subnet
@@ -74,7 +70,7 @@ resource "azurerm_subnet" "myterraformsubnet" {
 # Create public IPs
 resource "azurerm_public_ip" "myterraformpublicip" {
     name                         = "myPublicIP"
-    location                     = "koreacentral"
+    location                     = "eastus"
     resource_group_name          = azurerm_resource_group.myterraformgroup.name
     allocation_method            = "Dynamic"
 
@@ -86,7 +82,7 @@ resource "azurerm_public_ip" "myterraformpublicip" {
 # Create Network Security Group and rule
 resource "azurerm_network_security_group" "myterraformnsg" {
     name                = "myNetworkSecurityGroup"
-    location            = "koreacentral"
+    location            = "eastus"
     resource_group_name = azurerm_resource_group.myterraformgroup.name
     
     security_rule {
@@ -109,7 +105,7 @@ resource "azurerm_network_security_group" "myterraformnsg" {
 # Create network interface
 resource "azurerm_network_interface" "myterraformnic" {
     name                      = "myNIC"
-    location                  = "koreacentral"
+    location                  = "eastus"
     resource_group_name       = azurerm_resource_group.myterraformgroup.name
 
     ip_configuration {
@@ -144,7 +140,7 @@ resource "random_id" "randomId" {
 resource "azurerm_storage_account" "mystorageaccount" {
     name                        = "diag${random_id.randomId.hex}"
     resource_group_name         = azurerm_resource_group.myterraformgroup.name
-    location                    = "koreacentral"
+    location                    = "eastus"
     account_tier                = "Standard"
     account_replication_type    = "LRS"
 
@@ -153,10 +149,17 @@ resource "azurerm_storage_account" "mystorageaccount" {
     }
 }
 
+# Create (and display) an SSH key
+resource "tls_private_key" "example_ssh" {
+  algorithm = "RSA"
+  rsa_bits = 4096
+}
+output "tls_private_key" { value = "${tls_private_key.example_ssh.private_key_pem}" }
+
 # Create virtual machine
 resource "azurerm_linux_virtual_machine" "myterraformvm" {
     name                  = "myVM"
-    location              = "koreacentral"
+    location              = "eastus"
     resource_group_name   = azurerm_resource_group.myterraformgroup.name
     network_interface_ids = [azurerm_network_interface.myterraformnic.id]
     size                  = "Standard_DS1_v2"
@@ -170,18 +173,17 @@ resource "azurerm_linux_virtual_machine" "myterraformvm" {
     source_image_reference {
         publisher = "Canonical"
         offer     = "UbuntuServer"
-        sku       = "18.04-LTS"
+        sku       = "16.04.0-LTS"
         version   = "latest"
     }
 
-    os_profile {
-      computer_name  = "${var.resource_prefix}TFVM"
-      admin_username = var.admin_username
-      admin_password = var.admin_password
-    }
-
-    os_profile_linux_config {
-      disable_password_authentication = false
+    computer_name  = "myvm"
+    admin_username = "azureuser"
+    disable_password_authentication = true
+        
+    admin_ssh_key {
+        username       = "azureuser"
+        public_key     = tls_private_key.example_ssh.public_key_openssh
     }
 
     boot_diagnostics {
@@ -191,20 +193,6 @@ resource "azurerm_linux_virtual_machine" "myterraformvm" {
     tags = {
         environment = "Terraform VM"
     }
-
-    provisioner "remote-exec" {
-      connection {
-        host     = azurerm_linux_virtual_machine.myterraformvm.public_ip_address
-        type     = "ssh"
-        user     = var.admin_username
-        password = var.admin_password
-      }
-
-      inline = [
-        "ls -a",
-        "cat newfile.txt",
-      ]
-    }
 }
 
-output "ip_address" { value = "${azurerm_linux_virtual_machine.myterraformvm.public_ip_address}" }
+output "ip_address" { value = "${azurerm_public_ip.myterraformpublicip.ip_address}" }
