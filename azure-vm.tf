@@ -10,6 +10,12 @@ variable "az_client_secret" {
 variable "az_tenant_id" {
   description = "The Tenant ID for the Service Principal to use for AKS"
 }
+variable "admin_username" {
+  description = "Created VM user name"
+}
+variable "admin_password" {
+  description = "Created VM user password"
+}
 
 locals {
     tags = {
