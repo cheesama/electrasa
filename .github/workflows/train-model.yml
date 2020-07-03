@@ -26,7 +26,6 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     - name: Terraform Setting
-      id: terraform_setting
       run: |
         terraform init
         export TF_VAR_az_subscription_id=${{ secrets.az_subscription_id }}
@@ -36,5 +35,15 @@ jobs:
         
         terraform plan
         terraform apply -auto-approve
-        terraform output -json
+    - name: executing remote ssh commands using ssh key
+      uses: appleboy/ssh-action@master
+      with:
+        host: $(terraform output -json | jq '.ip_address.value')
+        username: azureuser
+        key: $(terraform output -json | jq '.tls_private_key.value')
+        script: |
+          whoami
+          ls -al
+    - name: Destory Resource
+      run: |
         terraform destroy -auto-approve    
