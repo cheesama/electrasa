@@ -33,8 +33,6 @@ jobs:
         export TF_VAR_az_client_id=${{ secrets.az_client_id }}
         export TF_VAR_az_client_secret=${{ secrets.az_client_secret }}
         export TF_VAR_az_tenant_id=${{ secrets.az_tenant_id }}
-        export TF_VAR_admin_username=${{ secrets.admin_username }}
-        export TF_VAR_admin_password=${{ secrets.admin_password }}
         
         terraform plan
         terraform apply -auto-approve
