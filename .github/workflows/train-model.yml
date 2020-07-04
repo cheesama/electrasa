@@ -25,22 +25,8 @@ jobs:
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
-    - name: Terraform Setting
+    - name: Train Model
       run: |
-        terraform init
-        export TF_VAR_az_subscription_id=${{ secrets.az_subscription_id }}
-        export TF_VAR_az_client_id=${{ secrets.az_client_id }}
-        export TF_VAR_az_client_secret=${{ secrets.az_client_secret }}
-        export TF_VAR_az_tenant_id=${{ secrets.az_tenant_id }}
-        
-        terraform plan
-        terraform apply -auto-approve
-        
-        echo $(terraform output -json | jq '.ip_address.value')
-        echo $(terraform output -json | jq '.tls_private_key.value') > private_key.txt
-    - name: executing remote ssh commands using ssh key
-      run: |
-        ssh -i private_key.txt azureuser@$(terraform output -json | jq '.ip_address.value')
-    - name: Destory Resource
-      run: |
-        terraform destroy -auto-approve    
+          pip install -r requirements.txt
+          pip install .
+          python test/test_KoELECTRA_backbone.py

@@ -9,4 +9,5 @@ trainer.train(
     intent_optimizer_lr=4e-4,
     entity_optimizer_lr=4e-4,
     gpu_num=0,
+    epochs=3
 )

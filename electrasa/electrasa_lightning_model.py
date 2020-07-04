@@ -14,6 +14,7 @@ from .dataset.intent_entity_dataset import (
     token_concat_collate_fn,
 )
 from .model.models import KoELECTRAFineTuner
+from .model.center_loss import CenterLoss
 
 import os, sys
 import multiprocessing
