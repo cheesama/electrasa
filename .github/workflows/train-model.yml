@@ -16,7 +16,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Install Terraform
+    - name: Install Azure CLI
       run: |
         sudo apt-get update && sudo apt-get install -y curl apt-transport-https vim gnupg2 unzip wget jq
         curl -sL https://aka.ms/InstallAzureCLIDeb | sudo -E bash
@@ -27,7 +27,7 @@ jobs:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     - name: Train Model
       run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install .
+          pip3 install --upgrade pip
+          pip3 install -r requirements.txt
+          pip3 install .
           python test/test_KoELECTRA_backbone.py
