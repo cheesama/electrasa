@@ -12,8 +12,9 @@ class KoELECTRAFineTuner(nn.Module):
         self.intent_class_num = intent_class_num
         self.entity_class_num = entity_class_num
         self.backbone = ElectraModel.from_pretrained(default_model_path)
-        self.intent_embedding = nn.Linear(self.backbone.config.hidden_size, self.intent_class_num)
-        self.entity_embedding = nn.Linear(self.backbone.config.hidden_size, self.entity_class_num)
+        self.feature_dim = self.backbone.config.hidden_size
+        self.intent_embedding = nn.Linear(self.feature_dim, self.intent_class_num)
+        self.entity_embedding = nn.Linear(self.feature_dim, self.entity_class_num)
         self.entity_featurizer = CRF(self.entity_class_num, batch_first=True)
         self.pad_token_id = pad_token_id
 

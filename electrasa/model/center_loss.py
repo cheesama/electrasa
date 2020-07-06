@@ -13,7 +13,7 @@ class CenterLoss(nn.Module):
         feat_dim (int): feature dimension.
     """
 
-    def __init__(self, num_classes=10, feat_dim=2):
+    def __init__(self, num_classes, feat_dim):
         super(CenterLoss, self).__init__()
         self.num_classes = num_classes
         self.feat_dim = feat_dim
@@ -31,6 +31,7 @@ class CenterLoss(nn.Module):
             torch.pow(x, 2).sum(dim=1, keepdim=True).expand(batch_size, self.num_classes)
             + torch.pow(self.centers, 2).sum(dim=1, keepdim=True).expand(self.num_classes, batch_size).t()
         )
+
         distmat.addmm_(1, -2, x, self.centers.t())
 
         classes = torch.arange(self.num_classes).long()

@@ -23,11 +23,11 @@ def train(
     batch_size=None,
     gpu_num=0,
     distributed_backend=None,
-    checkpoint_name='electrasa_model'
+    checkpoint_prefix='electrasa_model_'
 ):
     early_stopping = EarlyStopping('val_loss')
     lr_logger = LearningRateLogger()
-    checkpoint_callback = model_checkpoint.ModelCheckpoint(prefix=checkpoint_name)
+    checkpoint_callback = model_checkpoint.ModelCheckpoint(prefix=checkpoint_prefix)
 
     if batch_size is None:
         trainer = Trainer(

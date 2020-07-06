@@ -46,6 +46,7 @@ class ElectrasaClassifier(pl.LightningModule):
         self.entity_loss_weight = self.hparams.entity_loss_weight
 
         self.intent_loss_fn = nn.CrossEntropyLoss()
+        self.intent_center_loss_fn = CenterLoss(len(self.dataset.intent_dict), len(self.dataset.intent_dict))
         # ignore O tag class label to figure out entity imbalance distribution
         self.entity_loss_fn = nn.CrossEntropyLoss(ignore_index=self.dataset.pad_token_id)
 
@@ -103,6 +104,7 @@ class ElectrasaClassifier(pl.LightningModule):
             eval(
                 f"{self.optimizer}(self.parameters(), lr={self.entity_optimizer_lr})"
             ),
+            eval(f"{self.optimizer}(self.intent_center_loss_fn.parameters(), lr={self.intent_optimizer_lr})")
         ]
 
         schedulers = [
@@ -118,6 +120,13 @@ class ElectrasaClassifier(pl.LightningModule):
                 "interval": "epoch",
                 "frequency": 1,
             },
+            {
+                "scheduler": ReduceLROnPlateau(optimizers[2], patience=1, factor=0.5),
+                "monitor": "val_intent_f1",
+                "interval": "epoch",
+                "frequency": 1,
+            },
+
         ]
 
         return optimizers, schedulers
@@ -160,6 +169,17 @@ class ElectrasaClassifier(pl.LightningModule):
                 "log": tensorboard_logs,
             }
 
+        if optimizer_idx == 2:
+            intent_center_loss = self.intent_center_loss_fn(intent_pred, intent_idx.long(),) * self.intent_loss_weight
+            tensorboard_logs["train/intent/center_loss"] = intent_center_loss
+
+            return {
+                "loss": intent_center_loss,
+                "log": tensorboard_logs,
+            }
+
+
+
     def validation_step(self, batch, batch_idx):
         self.model.eval()
 
@@ -175,13 +195,14 @@ class ElectrasaClassifier(pl.LightningModule):
             entity_acc = get_token_accuracy(entity_idx.cpu(), torch.tensor(entity_pred).cpu(), ignore_index=self.dataset.pad_token_id)[0]
 
         intent_loss = self.intent_loss_fn(intent_pred, intent_idx.long(),) * self.intent_loss_weight
+        intent_center_loss = self.intent_center_loss_fn(intent_pred, intent_idx.long(),) * self.intent_loss_weight
         entity_loss = -entity_loss * self.entity_loss_weight
 
         return {
             "val_intent_acc": torch.Tensor([intent_acc]),
             "val_intent_f1": torch.Tensor([intent_f1]),
             "val_entity_acc": torch.Tensor([entity_acc]),
-            "val_loss": intent_loss + entity_loss,
+            "val_loss": intent_loss + entity_loss + intent_center_loss,
         }
 
     def validation_epoch_end(self, outputs):

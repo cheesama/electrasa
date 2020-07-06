@@ -27,6 +27,7 @@ jobs:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     - name: Train Model
       run: |
+          pip install --upgrade pip
           pip install -r requirements.txt
           pip install .
           python test/test_KoELECTRA_backbone.py
