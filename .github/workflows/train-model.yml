@@ -27,6 +27,7 @@ jobs:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     - name: Train Model
       run: |
+          wget ${{ secrets.NLU_FILE_PATH }}
           pip3 install --upgrade pip
           pip3 install -r requirements.txt
           pip3 install .
