@@ -18,6 +18,7 @@ def train(
     intent_optimizer_lr=2e-4,
     entity_optimizer_lr=8e-4,
     intent_loss_weight=1.0,
+    intent_center_loss_weight=0.1,
     entity_loss_weight=1.0,
     epochs=20,
     batch_size=None,
@@ -58,6 +59,7 @@ def train(
     model_args["intent_optimizer_lr"] = intent_optimizer_lr
     model_args["entity_optimizer_lr"] = entity_optimizer_lr
     model_args["intent_loss_weight"] = intent_loss_weight
+    model_args["intent_center_loss_weight"] = intent_center_loss_weight
     model_args["entity_loss_weight"] = entity_loss_weight
 
     hparams = Namespace(**model_args)
