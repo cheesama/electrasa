@@ -30,5 +30,4 @@ jobs:
           pip3 install --upgrade pip
           pip3 install -r requirements.txt
           pip3 install .
-          cd tests && wget ${{ secrets.NLU_FILE_PATH }}
-          python3 tests/test_KoELECTRA_backbone.py
+          cd tests && wget ${{ secrets.NLU_FILE_PATH }} && python3 tests/test_KoELECTRA_backbone.py
