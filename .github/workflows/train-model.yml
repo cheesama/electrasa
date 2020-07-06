@@ -30,4 +30,4 @@ jobs:
           pip3 install --upgrade pip
           pip3 install -r requirements.txt
           pip3 install .
-          python tests/test_KoELECTRA_backbone.py
+          python3 tests/test_KoELECTRA_backbone.py
