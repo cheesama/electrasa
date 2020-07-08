@@ -27,6 +27,7 @@ jobs:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     - name: Train Model
       env:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
           TB_CREDENTIALS: ${{ secrets.TB_CREDENTIALS }}
       run: |
           #az storage blob upload --help
