@@ -21,6 +21,7 @@ H --> K(Feature ...)
 H --> L(Feature ...)
 H --> M(Feature n-1)
 I --> N(Intent Embedding FC Layer)
+I --> U(Auxiliary Center Loss)
 J --> O(Entity Embedding FC Layer)
 K --> O
 L --> O
@@ -37,4 +38,5 @@ U --> T(Entity Label n-1)
 
 ## Reference
 [KoELECTRA](https://github.com/monologg/KoELECTRA)
+
 [pytorch-center-loss](https://github.com/KaiyangZhou/pytorch-center-loss)
