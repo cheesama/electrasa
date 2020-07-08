@@ -21,7 +21,7 @@ H --> K(Feature ...)
 H --> L(Feature ...)
 H --> M(Feature n-1)
 I --> N(Intent Embedding FC Layer)
-I --> U(Auxiliary Center Loss)
+I --> V(Auxiliary Center Loss)
 J --> O(Entity Embedding FC Layer)
 K --> O
 L --> O
