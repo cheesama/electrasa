@@ -47,7 +47,7 @@ class ElectrasaClassifier(pl.LightningModule):
         self.entity_loss_weight = self.hparams.entity_loss_weight
 
         self.intent_loss_fn = nn.CrossEntropyLoss()
-        self.intent_center_loss_fn = CenterLoss(len(self.dataset.intent_dict), len(self.dataset.intent_dict))
+        self.intent_center_loss_fn = CenterLoss(len(self.dataset.intent_dict), self.model.backbone.config.hidden_size)
         # ignore O tag class label to figure out entity imbalance distribution
         self.entity_loss_fn = nn.CrossEntropyLoss(ignore_index=self.dataset.pad_token_id)
 
@@ -136,7 +136,7 @@ class ElectrasaClassifier(pl.LightningModule):
         self.model.train()
 
         tokens, intent_idx, entity_idx = batch
-        intent_pred, entity_pred, entity_loss = self.forward(tokens, entity_idx)
+        feature, intent_pred, entity_pred, entity_loss = self.forward(tokens, entity_idx)
 
         intent_acc = get_accuracy(intent_pred.argmax(1), intent_idx)[0]
         intent_f1 = f1_score(intent_pred.argmax(1), intent_idx)
@@ -171,7 +171,7 @@ class ElectrasaClassifier(pl.LightningModule):
             }
 
         if optimizer_idx == 2:
-            intent_center_loss = self.intent_center_loss_fn(intent_pred, intent_idx.long(),) * self.intent_center_loss_weight
+            intent_center_loss = self.intent_center_loss_fn(feature, intent_idx.long(),) * self.intent_center_loss_weight
             tensorboard_logs["train/intent/center_loss"] = intent_center_loss
 
             return {
@@ -185,7 +185,7 @@ class ElectrasaClassifier(pl.LightningModule):
         self.model.eval()
 
         tokens, intent_idx, entity_idx = batch
-        intent_pred, entity_pred, entity_loss = self.forward(tokens, entity_idx)
+        feature, intent_pred, entity_pred, entity_loss = self.forward(tokens, entity_idx)
 
         intent_acc = get_accuracy(intent_pred.argmax(1), intent_idx)[0]
         intent_f1 = f1_score(intent_pred.argmax(1), intent_idx)
@@ -196,7 +196,7 @@ class ElectrasaClassifier(pl.LightningModule):
             entity_acc = get_token_accuracy(entity_idx.cpu(), torch.tensor(entity_pred).cpu(), ignore_index=self.dataset.pad_token_id)[0]
 
         intent_loss = self.intent_loss_fn(intent_pred, intent_idx.long(),) * self.intent_loss_weight
-        intent_center_loss = self.intent_center_loss_fn(intent_pred, intent_idx.long(),) * self.intent_loss_weight
+        intent_center_loss = self.intent_center_loss_fn(feature, intent_idx.long(),) * self.intent_loss_weight
         entity_loss = -entity_loss * self.entity_loss_weight
 
         return {

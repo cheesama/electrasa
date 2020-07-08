@@ -11,11 +11,12 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
+    container: docker://dvcorg/cml-py3:latest
 
     steps:
     - uses: actions/checkout@v2
+
     - name: Install Azure CLI
       run: |
         sudo apt-get update && sudo apt-get install -y curl python3-setuptools apt-transport-https vim gnupg2 unzip wget jq
@@ -26,9 +27,13 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     - name: Train Model
+      env:
+          TB_CREDENTIALS: ${{ secrets.TB_CREDENTIALS }}
       run: |
-          az storage blob upload --help
+          #az storage blob upload --help
           pip3 install --upgrade pip
           pip3 install -r requirements.txt
           pip3 install .
+          cml-tensorboard-dev --logdir tests/lightning_logs --md --name "Go to tensorboard" >> report.md
+          cml-send-comment report.md
           cd tests && wget ${{ secrets.NLU_FILE_PATH }} && pwd && python3 test_KoELECTRA_backbone.py
