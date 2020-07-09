@@ -1,7 +1,8 @@
 from argparse import Namespace
+from collections import Counter
 
 from torch.nn import functional as F
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader, random_split, WeightedRandomSampler
 from torch.optim import Adam
 from torch.optim.lr_scheduler import StepLR, ReduceLROnPlateau
 
@@ -64,6 +65,10 @@ class ElectrasaClassifier(pl.LightningModule):
             self.dataset, [train_length, len(self.dataset) - train_length],
         )
 
+        intent_sampling_weights = [ 1 / item[1] for item in sorted(Counter([each_dataset[1] for each_dataset in self.train_dataset]).items())]
+        sampling_weights = [intent_sampling_weights[item[1]] for item in self.train_dataset]
+        self.sampler = WeightedRandomSampler(sampling_weights, len(sampling_weights))
+
         self.hparams.intent_label = self.get_intent_label()
         self.hparams.entity_label = self.get_entity_label()
 
@@ -85,6 +90,7 @@ class ElectrasaClassifier(pl.LightningModule):
             batch_size=self.batch_size,
             num_workers=multiprocessing.cpu_count(),
             collate_fn=token_concat_collate_fn,
+            sampler=self.sampler
         )
         return train_loader
 

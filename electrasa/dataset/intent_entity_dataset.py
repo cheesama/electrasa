@@ -1,4 +1,4 @@
-from collections import OrderedDict
+from collections import OrderedDict, Counter
 from tqdm import tqdm
 from typing import List
 
@@ -162,10 +162,13 @@ class RasaIntentEntityDataset(torch.utils.data.Dataset):
 
 
                         self.dataset.append(each_data_dict)
-
         
         print(f"Intents: {self.intent_dict}")
         print(f"Entities: {self.entity_dict}")
+
+        intent_sampling_weights = [ 1 / item[1] for item in sorted(Counter([each_dataset['intent_idx'] for each_dataset in self.dataset]).items())]
+        self.sampling_weights = [intent_sampling_weights[item['intent_idx']] for item in self.dataset]
+        #print (f"intent_sampling_weights : {self.sampling_weights}")
 
     def tokenize(self, text: str, skip_special_char=True):
         if skip_special_char:
