@@ -67,7 +67,7 @@ class ElectrasaClassifier(pl.LightningModule):
 
         intent_sampling_weights = [ 1 / item[1] for item in sorted(Counter([each_dataset[1] for each_dataset in self.train_dataset]).items())]
         sampling_weights = [intent_sampling_weights[item[1]] for item in self.train_dataset]
-        self.sampler = WeightedRandomSampler(sampling_weights, len(sampling_weights))
+        self.sampler = WeightedRandomSampler(sampling_weights, len(sampling_weights), replacement=False)
 
         self.hparams.intent_label = self.get_intent_label()
         self.hparams.entity_label = self.get_entity_label()
