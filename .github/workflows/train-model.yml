@@ -36,4 +36,4 @@ jobs:
           pip3 install .
           cml-tensorboard-dev --logdir tests/lightning_logs --md --name "Go to tensorboard" >> report.md
           cml-send-comment report.md
-          cd tests && wget ${{ secrets.NLU_FILE_PATH }} && pwd && python3 test_KoELECTRA_backbone.py
+          cd tests && wget ${{ secrets.NLU_FILE_PATH }} && pwd && python3 train_electrasa_model.py
