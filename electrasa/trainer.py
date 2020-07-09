@@ -14,9 +14,9 @@ import torch
 def train(
     file_path,
     train_ratio=0.8,
-    optimizer="Adam",
-    intent_optimizer_lr=2e-4,
-    entity_optimizer_lr=8e-4,
+    optimizer="AdamW",
+    intent_optimizer_lr=1e-4,
+    entity_optimizer_lr=2e-4,
     intent_loss_weight=1.0,
     intent_center_loss_weight=0.1,
     entity_loss_weight=1.0,
