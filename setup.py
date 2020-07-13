@@ -5,7 +5,7 @@ with open("requirements.txt") as f:
 
 setup(
     name="electrasa",
-    version="0.2.1",
+    version="0.2.3",
     description="ELECTRA pretrained model + RASA dataset based Fine-Tuner",
     author="Cheesama",
     install_requires=required,

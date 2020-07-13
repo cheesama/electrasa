@@ -20,13 +20,13 @@ class KoELECTRAFineTuner(nn.Module):
 
     def forward(self, tokens, entity_labels=None):
         feature = self.backbone(tokens)[0]
-        mask = (tokens[:,1:] != self.pad_token_id)
 
         intent_pred = self.intent_embedding(feature[:,0,:]) #forward only first [CLS] token
         entity_feature = self.entity_embedding(feature[:,1:,:]) #except first [CLS] token
         entity_pred = self.entity_featurizer.decode(entity_feature) #do not apply masking for fixing same sequence length
 
         if entity_labels is not None:
+            mask = (tokens[:,1:] != self.pad_token_id)
             entity_loss = self.entity_featurizer(entity_feature, entity_labels, reduction='mean', mask=mask)
             return feature[:,0,:], intent_pred, entity_pred, entity_loss
 
