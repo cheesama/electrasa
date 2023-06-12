@@ -2,5 +2,5 @@ pytorch-nlp
 pytorch-crf
 torch
 
-transformers==2.9.1
+transformers==4.30.0
 pytorch-lightning==0.8.4
